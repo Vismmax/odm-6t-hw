@@ -1,0 +1,6 @@
+id=odm-6t-hardware
+name=Ace 6T ODM HW pack for 15R
+version=test
+versionCode=2
+author=Vismmax
+description=Ace 6T ODM HW pack for 15R firmware. Camera: macan sensors, EIS tables, DNG profiles, front (resolutions, FOV, night, restore). Battery 8300: power profile, devices config, fastchg tables, thermal profiles. Sensors: rotation detect, mxg4300. Reboot required.
