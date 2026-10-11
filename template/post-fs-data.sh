@@ -1,31 +1,17 @@
 #!/system/bin/sh
+
+[ "$(id -u)" != "0" ] && exit 1
+
 MODDIR=${0%/*}
-ODM="$MODDIR/system/odm"
+IMG_FILE="$MODDIR/odm.img"
+MNT_DIR="/mnt/odm6t/odm"
+EMPTY="/mnt/odm6t/empty"
 
-CHCON_DIRS="
-lib64/camera:vendor_file
-etc/camera:vendor_configs_file
-etc/power_profile:vendor_configs_file
-etc/devices_config:vendor_configs_file
-etc/temperature_profile:vendor_configs_file
-etc/sensor:vendor_configs_file
-firmware:vendor_configs_file
-etc/permissions:vendor_configs_file
-etc/vintf:vendor_configs_file
-etc/init:vendor_configs_file
-etc/wifi:vendor_configs_file
-etc/gps:vendor_configs_file
-"
+mkdir -p "$MNT_DIR" "$EMPTY"
 
-for spec in $CHCON_DIRS; do
-    d="${spec%%:*}"
-    ctx="${spec##*:}"
-    [ -d "$ODM/$d" ] && chcon -R "u:object_r:${ctx}:s0" "$ODM/$d"
-done
+mount -o ro,loop -t erofs "$IMG_FILE" "$MNT_DIR"
+mount -t overlay overlay-odm -o lowerdir="$MNT_DIR/etc:/odm/etc" "/odm/etc"
+mount -t overlay overlay-odm -o lowerdir="$MNT_DIR/lib64/camera:$EMPTY" "/odm/lib64/camera"
+mount -t overlay overlay-odm -o lowerdir="$MNT_DIR/firmware/fastchg:/odm/firmware/fastchg" "/odm/firmware/fastchg"
 
-find "$ODM" -name "*.so" -exec chcon u:object_r:vendor_file:s0 {} + 2>/dev/null
-
-chown -R 0:0 "$ODM" 2>/dev/null
-find "$ODM" -type d -exec chmod 755 {} + 2>/dev/null
-find "$ODM" -type f -exec chmod 644 {} + 2>/dev/null
-find "$ODM" -name "*.so" -exec chmod 755 {} + 2>/dev/null
+exit 0
